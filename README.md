@@ -12,9 +12,10 @@ JavaScript традиційно використовується для розр
 Створення найпростішого сервера
 Для створення веб-сервера на Node.js використовується модуль http. Ось простий приклад:
 
-JavaScript
 
-```const http = require('http');
+
+``` JavaScript
+const http = require('http');
 
 const server = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -23,7 +24,8 @@ const server = http.createServer((req, res) => {
 
 server.listen(3000, () => {
   console.log('Сервер запущено на порту 3000');
-});```
+});
+```
 
 Цей код створює сервер, який слухає порт 3000. Коли надходить запит, сервер відправляє відповідь "Привіт, світ!" з кодом 200 (успіх) та типом вмісту text/plain.
 
