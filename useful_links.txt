@@ -1,2 +1,5 @@
-https://nodejs.org/en/learn/getting-started/introduction-to-nodejs
+https://docs.nestjs.com/first-steps
+https://docs.nestjs.com/controllers
+https://docs.nestjs.com/providers
+https://docs.nestjs.com/modules
 
