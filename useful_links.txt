@@ -1,5 +1,7 @@
-https://docs.nestjs.com/first-steps
-https://docs.nestjs.com/controllers
-https://docs.nestjs.com/providers
-https://docs.nestjs.com/modules
+https://www.typescriptlang.org/docs/handbook/intro.html
+https://www.typescriptlang.org/docs/handbook/2/basic-types.html
+https://www.typescriptlang.org/docs/handbook/2/objects.html
+https://www.typescriptlang.org/docs/handbook/2/classes.html
+
+https://www.typescriptlang.org/play/
 
