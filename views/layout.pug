@@ -1,0 +1,22 @@
+doctype
+html
+  head
+    title Full Combats online game
+    link(rel='stylesheet', href='css/styles.css')
+    block scripts
+      script(src='js/app.js')
+  body
+    .app-container
+      block header
+        header#header
+          h1 Full Combats online game
+        nav 
+          a(href='/') Home
+          span |
+          a(href='/about') About
+          span |
+          a(href='/contact') Contact
+      block content
+      block foot
+        footer#footer
+          p some footer content
