@@ -1,9 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 
 export type User = any;
 
 @Injectable()
 export class UserService {
+  constructor(
+    private jwtService: JwtService
+  ) {}
+
   private readonly users = [
     {
       userId: 1,
@@ -22,7 +27,9 @@ export class UserService {
 
     if (user && user.password === password) {
       const { password, ...result } = user; // this is a trick to remove password from the user object
-      return result;
+      return {
+        access_token: await this.jwtService.signAsync(result),
+      };
     } else {
       return false;
     }
