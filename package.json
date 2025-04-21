@@ -24,6 +24,8 @@
     "@nestjs/core": "^11.0.1",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/platform-express": "^11.0.1",
+    "@types/express-session": "^1.18.1",
+    "express-session": "^1.18.1",
     "hbs": "^4.2.0",
     "pug": "^3.0.3",
     "reflect-metadata": "^0.2.2",

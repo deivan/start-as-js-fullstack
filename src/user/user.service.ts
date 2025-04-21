@@ -14,11 +14,15 @@ export class UserService {
       userId: 1,
       username: 'admin',
       password: 'admin123', // Ha-Ha!
+      role: 0,
+      isBlocked: false,
     },
     {
       userId: 2,
       username: 'bobdouble',
       password: '!q@w#e$r%t', // Wrong pass too, just pressed 1q2w3e4r5t with shift for numbers and hackers know about that way
+      role: 2,
+      isBlocked: false,
     },
   ];
 
@@ -28,8 +32,31 @@ export class UserService {
     if (user && user.password === password) {
       const { password, ...result } = user; // this is a trick to remove password from the user object
       return {
-        access_token: await this.jwtService.signAsync(result),
+        token: await this.jwtService.signAsync(result),
       };
+    } else {
+      return false;
+    }
+  }
+
+  async updateProfile(userId: number, updateProfileDto: Record<string, any>): Promise<User | false> {
+    let user = this.users.find(user => user.userId === userId);
+
+    if (user) {
+      Object.assign(user, updateProfileDto);
+      const { password, ...result } = user; // this is a trick to remove password from the user object
+      return result;
+    } else {
+      return false;
+    }
+  }
+
+  async blockUser(blockUserId: number): Promise<boolean> {
+    let blockUser = this.users.find(user => user.userId === blockUserId);
+
+    if (blockUser) {
+      blockUser.isBlocked = true;
+      return true;
     } else {
       return false;
     }

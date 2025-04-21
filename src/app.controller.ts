@@ -11,9 +11,9 @@ export class AppController {
     return { message: 'Now we will start a Web Application by Server Side Rendering' };
   }
 
-  // @Get('about')
-  // @Render('about')
-  // about() {
-  //   return { content: 'Some text coul\'be here...' };
-  // }
+  @Get('about')
+  @Render('about')
+  about() {
+    return { content: 'Some text coul\'be here...' };
+  }
 }

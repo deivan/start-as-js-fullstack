@@ -1,10 +1,10 @@
 doctype
 html
   head
-    title Full Combats online game
+    title Full Combats online game :: User Profile
     link(rel='stylesheet', href='css/styles.css')
     block scripts
-      script(src='js/app.js')
+      script(src='js/profile.js')
   body
     .app-container
       block header
@@ -16,14 +16,7 @@ html
           a(href='/about') About
           span |
           a(href='/contact') Contact
-      .login 
-        form(method="POST" action="/user")
-          label(for="username") Username:
-          input(type="text" name="username" required)
-          label(for="password") Password:
-          input(type="password" name="password" required)
-          button(type="submit") Login
       block content
       block foot
         footer#footer
-          p some footer content
+          p some footer content for profile page
