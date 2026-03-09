@@ -4,7 +4,16 @@
 
 Впевніться, що у вас увімкнено WSL 2 (Windows Subsystem for Linux). Це забезпечує найкращу продуктивність Docker на Windows.
 
+https://learn.microsoft.com/en-us/windows/wsl/install
+
 Встановіть Docker Desktop (якщо ще не встановлено) і в його налаштуваннях переконайтеся, що використовується інтеграція з WSL 2.
+
+    Налаштуйте інтеграцію:
+        Відкрийте програму Docker Desktop.
+        Перейдіть в Settings (шестірня вгорі).
+        Виберіть Resources > WSL Integration.
+        Увімкніть перемикач для вашого дистрибутива Linux (наприклад, Ubuntu).
+        Перевірка: Відкрийте термінал вашої Linux-системи (Ubuntu) та введіть docker --version. Ви маєте побачити версію Docker. 
 
 ## Крок 2: Структура проєкту
 
