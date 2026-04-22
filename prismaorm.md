@@ -398,3 +398,119 @@ model User {
 3. Зберігаємо файл і застосовуємо міграцію:
    `npx prisma migrate dev`
    
+### 11. Принципова різниця у підході до обробки даних (TypeORM vs Prisma ORM)
+
+Хоча і TypeORM, і Prisma є популярними інструментами для роботи з базою даних у NestJS, вони базуються на абсолютно різних філософіях (парадигмах) обробки даних: **Об'єктно-орієнтованій (OOP)** проти **Функціональної (Data-driven)**.
+
+#### 11.1. Робота зі станом: Екземпляри класів (TypeORM) проти Простих об'єктів (Prisma)
+
+**TypeORM (Патерн Active Record / Data Mapper)**
+
+TypeORM працює з **екземплярами класів (Entities)**. Коли ви отримуєте дані з бази, TypeORM створює реальний об'єкт TypeScript (з методами, гетерами та сетерами). Щоб оновити дані, ви мутуєте (змінюєте) властивості цього об'єкта в оперативній пам'яті, а потім передаєте весь об'єкт у метод `save()`.
+
+*Приклад TypeORM (мутація стану):*
+```ts
+// 1. Отримуємо екземпляр класу User
+const user = await this.userRepository.findOne({ where: { id: 1 } });
+
+// 2. Змінюємо стан об'єкта в пам'яті (мутація)
+user.isActive = false;
+user.loginAttempts = user.loginAttempts + 1;
+
+// 3. Зберігаємо змінений об'єкт назад у базу
+// TypeORM під капотом порівнює старий і новий стан, щоб згенерувати UPDATE запит
+await this.userRepository.save(user); 
+```
+
+**Prisma ORM**
+
+Prisma повертає **прості JavaScript об'єкти (POJOs — Plain Old JavaScript Objects)**. Вона не має екземплярів класів чи методів на об'єктах даних. Оновлення відбувається в суто функціональному стилі: ви викликаєте функцію `update`, передаючи їй унікальний ідентифікатор (`where`) та об'єкт зі змінами (`data`).
+
+*Приклад Prisma (функціональний підхід):*
+```ts
+// Ми не витягуємо об'єкт у пам'ять для мутації.
+// Ми одразу відправляємо інструкцію до бази даних.
+const updatedUser = await this.prisma.user.update({
+  where: { id: 1 },
+  data: {
+    isActive: false,
+    // Prisma підтримує атомарні операції без необхідності знати попереднє значення
+    loginAttempts: { increment: 1 } 
+  }
+});
+// updatedUser — це простий JSON-подібний об'єкт, а не екземпляр класу
+```
+
+#### 11.2. Точність типізації (Type Safety) при вибірці частини даних
+
+Це одна з найголовніших причин, чому розробники переходять на Prisma.
+
+**TypeORM: Проблема часткової вибірки**
+Коли ви просите TypeORM повернути лише кілька колонок (`select`), він все одно типізує результат як повний клас `User`. Це може призвести до критичних помилок (Runtime Errors), оскільки TypeScript вважатиме, що поле існує, хоча ви його не завантажили з бази.
+
+*Приклад TypeORM:*
+```ts
+// Просимо повернути лише id та name
+const users = await this.userRepository.find({
+  select: ['id', 'name']
+});
+
+// TypeScript НЕ покаже помилку тут, адже тип users - це User[].
+// Але під час виконання коду (в Runtime) це викличе помилку, 
+// бо email дорівнює undefined, і ми не можемо викликати .toLowerCase()
+console.log(users[0].email.toLowerCase()); 
+```
+
+**Prisma ORM: Строга типізація на льоту**
+Prisma динамічно генерує типи на основі вашого запиту. Якщо ви вибрали лише `id` та `name`, Prisma створить новий тип "під капотом", який містить лише ці два поля.
+
+*Приклад Prisma:*
+```ts
+const users = await this.prisma.user.findMany({
+  select: { id: true, name: true }
+});
+
+// TypeScript ПОКАЖЕ ПОМИЛКУ ще до компіляції (в редакторі):
+// Property 'email' does not exist on type '{ id: number; name: string; }'
+console.log(users[0].email); 
+```
+
+#### 11.3. Робота зі складними запитами та зв'язками (Relations)
+
+**TypeORM: QueryBuilder**
+
+Для глибоких або складних запитів у TypeORM масив `relations` швидко стає незручним. Розробникам доводиться використовувати `QueryBuilder`, який вимагає ручного написання SQL-подібного синтаксису (з `INNER JOIN`, `LEFT JOIN`), де легко зробити помилку в назві колонки (адже QueryBuilder погано типізований).
+
+*Приклад TypeORM (QueryBuilder):*
+```ts
+const users = await this.userRepository.createQueryBuilder('user')
+  .leftJoinAndSelect('user.posts', 'post')
+  .leftJoinAndSelect('post.comments', 'comment')
+  .where('user.isActive = :status', { status: true })
+  .andWhere('post.published = :isPublished', { isPublished: true })
+  .getMany();
+```
+
+**Prisma ORM: Вкладені об'єкти (Nested Queries)**
+
+Prisma повністю відмовляється від концепції SQL JOIN у своєму синтаксисі (хоча під капотом генерує оптимізовані JOIN-запити). Всі зв'язки обробляються через деревоподібну структуру об'єктів (вкладені `include` та `where`). Вона залишається строго типізованою на будь-якій глибині.
+
+*Приклад Prisma (Той самий запит):*
+```ts
+const users = await this.prisma.user.findMany({
+  where: { isActive: true },
+  include: {
+    posts: {
+      where: { published: true }, // Фільтруємо зв'язані дані прямо всередині
+      include: {
+        comments: true // Підтягуємо коментарі до цих постів
+      }
+    }
+  }
+});
+```
+
+#### 11.4. Підсумок
+
+* **TypeORM** ідеально підходить для тих, хто любить класичний об'єктно-орієнтований стиль, патерни Repository та інкапсуляцію бізнес-логіки всередині класів сутностей (використання методів на кшталт `user.hashPassword()`).
+* **Prisma** створювалася для світу TypeScript. Вона гарантує абсолютну безпеку типів (Type Safety), виключає можливість доступу до незавантажених полів і робить синтаксис складних запитів більш інтуїтивним та декларативним.
