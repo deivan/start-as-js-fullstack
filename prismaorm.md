@@ -8,70 +8,82 @@
 
 ### 2. Інсталяція, ініціалізація та плагін для VS Code
 
-Для початку роботи необхідно встановити саму Prisma (як інструмент розробки) та клієнт для роботи з нею в коді:
+Для початку роботи необхідно встановити саму Prisma (як інструмент розробки) та клієнт для роботи з нею в коді, а також адаптер для PostgreSQL:
 
 ```bash
 npm install prisma --save-dev
 npm install @prisma/client
+npm install @prisma/adapter-pg
 ```
 
 Далі ініціалізуємо Prisma в проєкті:
 ```bash
 npx prisma init
 ```
-Ця команда створює папку `prisma` з файлом `schema.prisma` та додає файл `.env` для збереження URL-адреси бази даних.
+Ця команда створює папку `prisma` з файлом `schema.prisma` та додає файл `.env` для збереження URL-адреси бази даних, та фпйл `prisma.config.ts` для конфігурування генератора.
 
 **💡 Важлива рекомендація:** Обов'язково встановіть офіційний плагін **Prisma** для редактора **VS Code**. Оскільки файл `.prisma` має власний синтаксис, плагін забезпечить підсвічування коду, автодоповнення (IntelliSense), автоматичне форматування (при збереженні) та перевірку помилок, що критично важливо для правильної побудови зв'язків.
 
 ### 3. Опис файлу schema.prisma
 
 Файл `schema.prisma` складається з трьох основних частин:
-1.  **Генератор (`generator`)**: Вказує, якою мовою генерувати клієнт (зазвичай це `prisma-client-js`).
+1.  **Генератор (`generator`)**: Вказує, якою мовою генерувати клієнт (зазвичай це `prisma-client`).
 2.  **Джерело даних (`datasource`)**: Вказує тип бази даних (PostgreSQL, MySQL, SQLite) та посилання на неї.
 3.  **Моделі (`model`)**: Опис самих таблиць.
 
 Приклад базового файлу:
 ```prisma
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client"
+  output          = "./generated/prisma"
+  moduleFormat    = "cjs"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL") // Береться з файлу .env
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String?  // Значення може бути null
-  createdAt DateTime @default(now())
+  id         Int     @default(autoincrement()) @id
+  email      String  @unique
+  firstName  String
+  lastName   String
+  password   String
+  status     Int  @default(1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 ```
 
+ Тепер потрібно створити базу даних та синхронізувати її зі схемою. Для цього виконайте команду:
+```bash
+npx prisma generate
+```
+
+Ця команда згенерує TypeScript-клієнт `PrismaClient` у вказаній папці (`/generated/prisma`), який ми будемо використовувати подалі для взаємодії з базою даних у коді.  
+
+
 ### 4. Інтеграція до Nest.js (Створення Prisma Module/Service)
 
-Щоб використовувати `PrismaClient` у NestJS, його потрібно загорнути у сервіс та зробити доступним для ін'єкції. Ви можете згенерувати ресурс або модуль/сервіс вручну, або за допомогою Nest CLI:
+Щоб використовувати наш згенерований `PrismaClient` у NestJS, його потрібно загорнути у сервіс та зробити доступним для ін'єкції. Ви можете згенерувати ресурс або модуль/сервіс вручну, або за допомогою Nest CLI:
 
 ```bash
 nest g module prisma
 nest g service prisma
 ```
-*(Примітка: команда `nest g res prisma` створить повний CRUD-ресурс, але для базового підключення достатньо модуля та сервісу, який ми зробимо глобальним).*
-
 **Приклад `prisma.service.ts`:**
 ```ts
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../prisma/generated/prisma/client'; // Шукайте шлях до згенерованого клієнта саме з використанням prisma/client
+import { PrismaPg } from '@prisma/adapter-pg';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  async onModuleInit() {
-    await this.$connect(); // Підключення до БД при старті додатку
-  }
-
-  async onModuleDestroy() {
-    await this.$disconnect(); // Відключення при зупинці
+export class PrismaService extends PrismaClient {
+  constructor() {
+    const adapter = new PrismaPg({
+      connectionString: process.env.DATABASE_URL,
+    });
+    super({ adapter });
   }
 }
 ```
