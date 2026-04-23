@@ -41,6 +41,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  schemas  = ["prisma", "public"] // Вказуємо схеми, які використовуватимемо (опціонально)
 }
 
 model User {
@@ -52,6 +53,8 @@ model User {
   status     Int  @default(1)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  @@schema("prisma") // Вказуємо, що ця модель належить до схеми "prisma" (опціонально, якщо використовуємо кілька схем)
 }
 ```
 
