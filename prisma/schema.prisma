@@ -22,7 +22,7 @@ model User {
   isBanned    Boolean   @default(false) @map("is_banned")
   isDeleted   Boolean   @default(false) @map("is_deleted")
   banEndAt    DateTime? @map("ban_end_at")
-  role        Int       @default(1)
+  role        Int       @default(2)
   lastLoginIP String?   @map("last_login_ip")
   lastLoginAt DateTime? @default(now()) @map("last_login_at")
   createdAt   DateTime? @default(now()) @map("created_at")

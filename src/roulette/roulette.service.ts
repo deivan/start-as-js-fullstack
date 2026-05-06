@@ -7,6 +7,8 @@ import * as crypto from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { GameSession, Prisma } from '../../prisma/generated/prisma/client';
 
+import { WalletService } from '../wallet/wallet.service';
+
 const GameRoom = '295d2985-2d44-4feb-8fa0-5e0c01ffd9f3';
 
 const generateResult = (serverSeed: string, clientSeed: string, nonce: number) => {
@@ -22,7 +24,7 @@ const generateResult = (serverSeed: string, clientSeed: string, nonce: number) =
 
 @Injectable()
 export class RouletteService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private walletService: WalletService) {}
   
   async create() {
     const serverSeed = crypto.randomBytes(32).toString('hex');
@@ -32,7 +34,7 @@ export class RouletteService {
         serverSeed,
         serverHash,
         clientSeed: '12345', // Replace with actual client seed
-        userId: 1
+        userId: 6
       }
     });
     // GameRoom = gameRoom.id;
@@ -44,7 +46,7 @@ export class RouletteService {
     return gameSessions;
   }
 
-  async spinOne(GameRoom: string, bet: number) {
+  async spinOne(GameRoom: string, bet: number, betAmount: number) {
     const gameSession = await this.prisma.gameSession.findUnique({
       where: { id: GameRoom }
     });
@@ -58,17 +60,25 @@ export class RouletteService {
       data: { nonce: gameSession.nonce + 1 }
     });
     try {
+      const isWin = result === bet; // Replace with actual win condition
       await this.prisma.rouletteBet.create({
         data: {
           gameId: GameRoom,
           nonce: gameSession.nonce,
           winningNumber: result,
           bet: bet,
-          isWin: result === bet, // Replace with actual win condition
-          userId: 1, // Replace with actual user ID
-          betAmount : 100 // Replace with actual bet amount
+          isWin: isWin, // Replace with actual win condition
+          userId: 6, // Replace with actual user ID
+          betAmount : betAmount // Replace with actual bet amount
         }
       });
+      const balanceAction = isWin ? { increment: betAmount * 36 } : { decrement: betAmount };
+
+      await this.prisma.wallet.update({
+        where: { userId: 6 }, // Replace with actual user ID
+        data: { balance: balanceAction }
+      });
+
     } catch (error) {
       console.error('Error creating bet:', error);
       throw error; // Rethrow the error after logging

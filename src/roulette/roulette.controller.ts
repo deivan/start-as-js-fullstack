@@ -8,7 +8,7 @@ import { UpdateRouletteDto } from './dto/update-roulette.dto';
 export class RouletteController {
   constructor(private readonly rouletteService: RouletteService) {}
 
-  @Post()
+  @Post() // Необхідна жорстка авторизація та отримання юзкерІД з токена
   create() {
     return this.rouletteService.create();
   }
@@ -21,9 +21,10 @@ export class RouletteController {
   @Post('spin')
   spin(
     @Body('sessionId') id: string,
-    @Body('bet') bet: number
+    @Body('bet') bet: number,
+    @Body('betAmount') betAmount: number
   ) {
-    return this.rouletteService.spinOne(id, bet);
+    return this.rouletteService.spinOne(id, bet, betAmount);
   }
 
   @Patch(':id')

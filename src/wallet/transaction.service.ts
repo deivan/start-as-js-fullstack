@@ -1,11 +1,12 @@
 // transaction.service.ts
 import { Injectable, ConflictException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { TransactionType, TransactionStatus, Prisma } from '@prisma/client';
+import { WalletService } from './wallet.service';
+import { TransactionType, TransactionStatus, Prisma } from '../../prisma/generated/prisma/client';
 
 @Injectable()
 export class TransactionService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private walletService: WalletService) {}
 
   async processWithdrawal(walletId: string, amount: Prisma.Decimal, idempotencyKey: string) {
     // 1. Перевірка ідемпотентності

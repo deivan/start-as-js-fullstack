@@ -13,6 +13,12 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  @Post('confirm')
+  confirmEmail(@Body('id') id: number) {
+    // Логіка підтвердження email за токеном
+    return this.usersService.confirmEmail(id);
+  }
+
   @Get()
   findAll() {
     return this.usersService.findAll({ skip: 0, take: 10 });

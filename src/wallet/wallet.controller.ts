@@ -10,13 +10,13 @@ import {
   HttpCode,
   HttpStatus
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../../prisma/generated/prisma/client';
 import { WalletService } from './wallet.service';
 import { TransactionService } from './transaction.service';
 
 // DTOs (Data Transfer Objects) для валідації вхідних даних
 class CreateWalletDto {
-  userId: string;
+  userId: number;
   currency?: string;
 }
 
@@ -25,27 +25,29 @@ class WithdrawDto {
   idempotencyKey: string;
 }
 
-@Controller('api/v1/wallets')
+@Controller('wallet')
 export class WalletController {
   constructor(
     private readonly walletService: WalletService,
     private readonly transactionService: TransactionService,
   ) {}
 
-  // POST /api/v1/wallets
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createWallet(@Body() dto: CreateWalletDto) {
     return this.walletService.createWallet(dto.userId, dto.currency);
   }
 
-  // GET /api/v1/wallets/:id/balance
   @Get(':id/balance')
   async getBalance(@Param('id') id: string) {
     return this.walletService.getBalance(id);
   }
 
-  // PATCH /api/v1/wallets/:id/status
+  @Post('deposit')
+  async deposit(@Body() dto: { id: string; amount: number }) {
+    return this.walletService.deposit(dto);
+  }
+
   @Patch(':id/status')
   async toggleStatus(
     @Param('id') id: string,
@@ -54,7 +56,6 @@ export class WalletController {
     return this.walletService.toggleWalletStatus(id, isActive);
   }
 
-  // POST /api/v1/wallets/:id/withdraw
   @Post(':id/withdraw')
   @HttpCode(HttpStatus.OK)
   async withdraw(
@@ -71,7 +72,6 @@ export class WalletController {
     );
   }
 
-  // GET /api/v1/wallets/:id/history?page=1&limit=20
   @Get(':id/history')
   async getHistory(
     @Param('id') id: string,
