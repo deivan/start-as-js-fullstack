@@ -1,0 +1,169 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider     = "prisma-client"
+  output       = "./generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["prisma"]
+}
+
+model User {
+  id          Int       @id @default(autoincrement()) @map("id")
+  username    String?   @unique @map("username")
+  password    String?   @map("password")
+  email       String?   @unique @map("email")
+  isBanned    Boolean   @default(false) @map("is_banned")
+  isDeleted   Boolean   @default(false) @map("is_deleted")
+  banEndAt    DateTime? @map("ban_end_at")
+  role        Int       @default(1)
+  lastLoginIP String?   @map("last_login_ip")
+  lastLoginAt DateTime? @default(now()) @map("last_login_at")
+  createdAt   DateTime? @default(now()) @map("created_at")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  profile      Profiles?
+  address      Addresses?
+  gameSessions GameSession[]
+  rouletteBets RouletteBet[]
+  wallet       Wallet?
+
+  @@index(username)
+  @@index(email)
+  @@index(createdAt)
+  @@index(lastLoginIP)
+  @@map("user")
+  @@schema("prisma")
+}
+
+model Profiles {
+  id        Int      @id @default(autoincrement()) @map("id")
+  userId    Int      @map("user_id")
+  rating    Int      @map("rating")
+  avatar    String?  @map("avatar")
+  level     Int      @default(0) @map("level")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  wallet   Wallet? @relation(fields: [walletId], references: [id])
+  user     User    @relation(fields: [userId], references: [id])
+  walletId String?
+
+  @@unique([userId])
+  @@index(level)
+  @@index(rating)
+  @@map("profiles")
+  @@schema("prisma")
+}
+
+model Addresses {
+  userId      Int      @id @map("user_id")
+  firstName   String   @map("first_name")
+  lastName    String   @map("last_name")
+  phoneNumber String   @map("phone_number")
+  address     String   @map("address")
+  address2    String?  @map("address2")
+  country     String?  @map("country")
+  postalCode  String   @map("postal_code")
+  city        String   @map("city")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index(country)
+  @@index(city)
+  @@map("addresses")
+  @@schema("prisma")
+}
+
+model GameSession {
+  id         String   @id @default(uuid())
+  userId     Int
+  serverSeed String
+  serverHash String
+  clientSeed String
+  nonce      Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  user User          @relation(fields: [userId], references: [id])
+  bets RouletteBet[]
+
+  @@schema("prisma")
+}
+
+model RouletteBet {
+  id            String      @id @default(uuid())
+  gameId        String      @map("game_id")
+  gameSession   GameSession @relation(fields: [gameId], references: [id])
+  betAmount     Int         @map("bet_amount") // Сума ставки в центах/копійках (Int краще за Float для грошей) 
+  bet           Int         @map("bet") // Число, на яке ставить гравець (0-36 для STRAIGHT, або 0 для RED/BLACK)
+  winningNumber Int         @map("winning_number") // Що випало на рулетці 
+  isWin         Boolean     @map("is_win")
+  nonce         Int         @map("nonce")
+  createdAt     DateTime    @default(now())
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  @@schema("prisma")
+}
+
+model Wallet {
+  id       String  @id @default(uuid())
+  userId   Int     @unique
+  user     User    @relation(fields: [userId], references: [id])
+  balance  Decimal @default(0.00) @db.Decimal(15, 2)
+  currency String  @default("UAH")
+  isActive Boolean @default(true)
+
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  profiles     Profiles[]
+
+  @@schema("prisma")
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  REFUND
+
+  @@schema("prisma")
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  DISPUTED
+
+  @@schema("prisma")
+}
+
+model Transaction {
+  id             String            @id @default(uuid())
+  walletId       String
+  wallet         Wallet            @relation(fields: [walletId], references: [id])
+  type           TransactionType
+  status         TransactionStatus @default(PENDING)
+  amount         Decimal           @db.Decimal(15, 2)
+  idempotencyKey String?           @unique // Для захисту від подвійних списань
+  referenceId    String? // ID пов'язаної транзакції (напр., для рефанду)
+  description    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([walletId])
+  @@index([createdAt])
+  @@schema("prisma")
+}

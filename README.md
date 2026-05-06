@@ -1,58 +1,98 @@
-# Основи фулл стек веб розробки (2025)
+<p align="center">
+  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+</p>
 
-Обов'язкова вимога для студента - мати базові впевнені знання у HTML, CSS, Javascript, Git.
-Послідовно, крок за кроком ми будемо занурюватись у веб розробку як на стороні бекенду (за допомогою фреймворку Nest.js), так і на стороні фронтенду. Наша мета - це створити повноцінну веб аплікацію з сервером, авторизацією, сайтом, адмінкою, нардами та гуріями.
+[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
+[circleci-url]: https://circleci.com/gh/nestjs/nest
 
-## Навчальний план (адженда) на 24 заняття:
+  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
+    <p align="center">
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
+<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
+<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
+<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
+<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
+  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
+    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
+  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
+</p>
+  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
+  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## 01. Введення у веб розробку. Клієнт-серверна архітектура. Засоби розробки (1 пара)
-Що таке протоколи HTTP/HTTPS/WS. Що відбувається, коли я набрав адресу сайту у браузері та натиснув кнопку Ентер. З чого почати шлях розробника - яку потрібно мати зброю. Що таке Git та GitHub (GitLab, Bitbucket, etc.).
-Перше знайомство, переваги Node.js над конкурентами. Інсталяція на локальний комп'ютер. Поєднання з засобом розробки VS Code. Запуск скриптів у консолі. Вбудовані модулі та їх підключення.
+## Description
 
-## 02. Серверне оточення виконання скриптів на мові Javascript - Node.js (1 пара)
-Відмінності виконання скриптів у Node.js та у браузері. Створення найпростішого серверу. Вивчення об'єктів Request та Response. Структура даних у відповіді, що повертає веб-сервер.
+[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-## 03. Встановлення фреймворку Nest.JS та базові налаштування для роботи (1 пара)
-Встановлення головного модулю Nest CLI та використання його з командною строкою для створення аплікації. Структура проекту та взаємодія між файлами. Архітектура Модуль - Контроллер - Провайдер. Запуск проекту, вбудовані засоби відладки.
+## Project setup
 
-## 04. Основи мови TypeScript (1 пара)
-Сумісність з Javascript, середа виконання. Сувора типізація, інтерфейси. Композитні типи даних. Дженеріки та їх зв'язок з інтерфейсами. Обробка помилок на етапі компіляції коду TypeScript. Робота з функціями, об'єктами та класами. Розширення та успадкування. Generic Object Types.
+```bash
+$ npm install
+```
 
-## 05. Створення статичного фронтенду (2 пари)
-Що таке Server Side Rendering (SSR). Шаблонізатори для бекенду. Як відбувається обробка HTML шаблонів за концепцію MVC. Створюємо каркас майбутнього сайту за допомогою бібліотеки Bootstrap.
+## Compile and run the project
 
-## 06. Авторизація та автентифікація (2 пари)
-Загальні положення концепції авторизації та автентифікації. Додаємо форму логіну та сторінки з обов'язковою авторизацію. Визначення ролей користувачів. Викорстання сесії для збереження даних між клієнтом та сервером.
+```bash
+# development
+$ npm run start
 
-## 07. Взаємодія бекенду з базами даних (1 пара)
-Два типи архітектури баз даних - SQL та noSQL. Інтерфейси підключення двигуну бази даних до бекенд аплікації. Використання зовнішнього схрону для бази даних аплікації, синхронізація та бекапи. Підключаємо до нашого бекенду базу Postgres. Заводимо користувачів у базу.
+# watch mode
+$ npm run start:dev
 
-## 08. Будуємо архітектуру бази даних для нашої конкретної аплікації та створюємо моделі даних (1 пара)
-...
+# production mode
+$ npm run start:prod
+```
 
-## 09. Роутінг та створення REST API (1 пара)
-Роутінг за допомогою контролерів Nest.js. Поєднання запитів до статичних сторінок та запитів до API. Вбудований у CLI генератор коду обробки роутів для контроллера. Плануємо та реалізуємо необхідні нам у подальшому роути.
+## Run tests
 
-## 10. Поєднання побудованих моделей даних до сервісів та контролерів нашої аплікації (2 пари)
-...
+```bash
+# unit tests
+$ npm run test
 
-## 11. Створення базової бізнес-логіки - кабінет користувача, налаштування, історія боїв, публічний профіль  (2 пари)
-...
+# e2e tests
+$ npm run test:e2e
 
-## 12. Створення бекенд функціоналу магазину бойових профілів (1 пара)
-...
+# test coverage
+$ npm run test:cov
+```
 
-## 13. Створення фронтенду для зони інтерактивної гри користувача за принципом SPA (1 пара)
-...
+## Deployment
 
-## 14. Створення функціоналу чатів за допомогою технології Web Socket, коментарів до публічного профілю ігрока (1 пара) 
-...
+When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
 
-## 15. Створення функціоналу для дуельних боїв бекенд та фронтенд (3 пари)
-...
+If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
 
-## 16. Додаємо бекенд та фронтенд для адміністративної панелі (2 пари)
-...
+```bash
+$ npm install -g @nestjs/mau
+$ mau deploy
+```
 
-## 17. Публікація готової аплікації, підсумки (1 пара)
-...
+With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+
+## Resources
+
+Check out a few resources that may come in handy when working with NestJS:
+
+- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
+- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
+- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
+- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
+- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
+- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
+- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
+- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+
+## Support
+
+Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+
+## Stay in touch
+
+- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
+- Website - [https://nestjs.com](https://nestjs.com/)
+- Twitter - [@nestframework](https://twitter.com/nestframework)
+
+## License
+
+Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
