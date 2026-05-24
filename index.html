@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket (Socket.io) Тестер</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .panel { border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+        .panel h3 { margin-top: 0; }
+        input { padding: 5px; margin-right: 10px; width: 250px; }
+        button { padding: 5px 15px; cursor: pointer; }
+        #logs { background: #f4f4f4; padding: 10px; height: 300px; overflow-y: scroll; border: 1px solid #ddd; font-family: monospace; }
+        .status-offline { color: red; font-weight: bold; }
+        .status-online { color: green; font-weight: bold; }
+    </style>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+</head>
+<body>
+
+    <h2>Тестування Nest.js WebSocket (Namespace: /chat)</h2>
+
+    <div class="panel">
+        <h3>1. Підключення</h3>
+        <p>Статус: <span id="status" class="status-offline">Відключено</span></p>
+        <input type="text" id="serverUrl" value="http://localhost:3400/chat" placeholder="URL сервера (з namespace)">
+        <button id="btnConnect">Підключитись</button>
+        <button id="btnDisconnect" disabled>Відключитись</button>
+    </div>
+
+    <div class="panel">
+        <h3>2. Керування кімнатами</h3>
+        <input type="text" id="roomName" placeholder="Введіть назву кімнати (напр. dev-room)">
+        <button id="btnJoin" disabled>Приєднатись до кімнати</button>
+    </div>
+
+    <div class="panel">
+        <h3>3. Відправка повідомлення</h3>
+        <input type="text" id="messageText" placeholder="Введіть текст повідомлення">
+        <button id="btnSend" disabled>Відправити</button>
+    </div>
+
+    <div class="panel">
+        <h3>Журнал подій (Логи)</h3>
+        <button onclick="document.getElementById('logs').innerHTML = ''" style="margin-bottom: 10px;">Очистити логи</button>
+        <div id="logs"></div>
+    </div>
+
+    <script>
+        // Змінна для зберігання екземпляра сокета
+        let socket;
+        let currentRoom = '';
+
+        // Отримання елементів DOM
+        const statusEl = document.getElementById('status');
+        const logsEl = document.getElementById('logs');
+        
+        const btnConnect = document.getElementById('btnConnect');
+        const btnDisconnect = document.getElementById('btnDisconnect');
+        const btnJoin = document.getElementById('btnJoin');
+        const btnSend = document.getElementById('btnSend');
+
+        const serverUrlInput = document.getElementById('serverUrl');
+        const roomNameInput = document.getElementById('roomName');
+        const messageTextInput = document.getElementById('messageText');
+
+        // Функція для додавання записів у лог
+        function logMessage(message, isSystem = false) {
+            const time = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.style.color = isSystem ? '#666' : '#000';
+            div.style.marginBottom = '5px';
+            div.innerHTML = `[${time}] ${message}`;
+            logsEl.appendChild(div);
+            logsEl.scrollTop = logsEl.scrollHeight; // Автоскрол вниз
+        }
+
+        // Оновлення стану кнопок залежно від підключення
+        function updateUI(isConnected) {
+            statusEl.textContent = isConnected ? 'Підключено' : 'Відключено';
+            statusEl.className = isConnected ? 'status-online' : 'status-offline';
+            
+            btnConnect.disabled = isConnected;
+            serverUrlInput.disabled = isConnected;
+            
+            btnDisconnect.disabled = !isConnected;
+            btnJoin.disabled = !isConnected;
+            btnSend.disabled = !isConnected;
+        }
+
+        // --- ЛОГІКА SOCKET.IO ---
+
+        // 1. Підключення
+        btnConnect.addEventListener('click', () => {
+            const url = serverUrlInput.value;
+            logMessage(`Спроба підключення до ${url}...`, true);
+            
+            // Ініціалізація підключення
+            socket = io(url, {
+                transports: ['websocket', 'polling'] // пріоритет на websocket
+            });
+
+            // Обробка успішного підключення
+            socket.on('connect', () => {
+                logMessage(`✅ Успішно підключено! Ваш ID: ${socket.id}`, true);
+                updateUI(true);
+            });
+
+            // Обробка відключення
+            socket.on('disconnect', (reason) => {
+                logMessage(`❌ Відключено. Причина: ${reason}`, true);
+                updateUI(false);
+                currentRoom = '';
+            });
+
+            // Обробка помилок
+            socket.on('connect_error', (err) => {
+                logMessage(`⚠️ Помилка з'єднання: ${err.message}`, true);
+            });
+
+            // --- СЛУХАЧІ ПОДІЙ ВІД СЕРВЕРА ---
+            
+            // Слухаємо подію 'roomMessage', яку ми прописали на бекенді у Gateway
+            socket.on('roomMessage', (data) => {
+                const sender = data.senderId || data.sender;
+                logMessage(`<b>[Кімната: ${currentRoom}]</b> ${sender}: ${data.message}`);
+            });
+        });
+
+        // 2. Відключення
+        btnDisconnect.addEventListener('click', () => {
+            if (socket) {
+                socket.disconnect();
+            }
+        });
+
+        // 3. Приєднання до кімнати
+        btnJoin.addEventListener('click', () => {
+            const room = roomNameInput.value.trim();
+            if (!room) {
+                alert('Введіть назву кімнати!');
+                return;
+            }
+            
+            currentRoom = room;
+            
+            // Відправляємо подію 'joinRoom' з payload { room: string }
+            socket.emit('joinRoom', { room: room }, (response) => {
+                // Цей колбек спрацює, якщо бекенд повертає дані (як у нашому handleJoinRoom)
+                if (response && response.status === 'success') {
+                    logMessage(`✅ Ви успішно приєдналися до кімнати: ${response.joinedRoom}`, true);
+                }
+            });
+        });
+
+        // 4. Відправка повідомлення
+        btnSend.addEventListener('click', () => {
+            const message = messageTextInput.value.trim();
+            
+            if (!currentRoom) {
+                alert('Спочатку приєднайтесь до кімнати!');
+                return;
+            }
+            if (!message) {
+                alert('Введіть повідомлення!');
+                return;
+            }
+
+            // Відправляємо подію 'sendMessage' з payload { room, message }
+            socket.emit('sendMessage', {
+                room: currentRoom,
+                message: message
+            });
+
+            // Очищаємо поле вводу
+            messageTextInput.value = '';
+        });
+
+        // Додаємо можливість відправляти повідомлення клавішею Enter
+        messageTextInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                btnSend.click();
+            }
+        });
+    </script>
+</body>
+</html>
